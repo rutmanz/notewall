@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { accessBook, accessQuotes, hash } from './db';
-import { Bindings } from './global';
+import { NotebookError, accessBook, accessQuotes, checkAccess, hash } from '@/db';
+import { Bindings } from '@/global';
 
 
 const app = new Hono<{Bindings:Bindings}>()
@@ -60,33 +60,38 @@ type BookData = {
     key?: string;
 }
 
-app.post("/books", async (c) => {
-    const book:BookData = await c.req.json()
-    if (!book.id) {
-        return c.json({ message: "Please provide an identifier." }, 400)
-    }
-    book.id = book.id.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30)
-    if (!book.title) {
-        return c.json({ message: "Please provide a title." },400)
-    }
-    if (!book.key) {
-        return c.json({ message: "Please provide a key." },400)
-    }
-    const exists = await c.env.DB.prepare("SELECT 1 FROM books WHERE id = ?").bind(book.id).first()
-    if (exists) {
-        return c.json({ message: "Book already exists." }, 403)
-    }
-    // console.log(await c.env.DB.prepare("SELECt * FROM quotes").run())
+// app.post("/books", async (c) => {
+//     const book:BookData = await c.req.json()
+//     if (!book.id) {
+//         return c.json({ message: "Please provide an identifier." }, 400)
+//     }
+//     book.id = book.id.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 30)
+//     if (!book.title) {
+//         return c.json({ message: "Please provide a title." },400)
+//     }
+//     if (!book.key) {
+//         return c.json({ message: "Please provide a key." },400)
+//     }
+//     const exists = await c.env.DB.prepare("SELECT 1 FROM books WHERE id = ?").bind(book.id).first()
+//     if (exists) {
+//         return c.json({ message: "Book already exists." }, 403)
+//     }
+//     // console.log(await c.env.DB.prepare("SELECt * FROM quotes").run())
     
-    const result = await c.env.DB.prepare("INSERT INTO books (id, title, key) VALUES (?,?,?)").bind(book.id, book.title, await hash(book.key)).run()
-    return c.json({ message: result.success ? "Book created!" : result.error, id: book.id }, result.success ? 200:500)
-})
+//     const result = await c.env.DB.prepare("INSERT INTO books (id, title, key) VALUES (?,?,?)").bind(book.id, book.title, await hash(book.key)).run()
+//     return c.json({ message: result.success ? "Book created!" : result.error, id: book.id }, result.success ? 200:500)
+// })
 
 app.get("/books", async (c) => {
     const result = await c.env.DB.prepare("SELECT id, title FROM books").all()
     return c.json({message:result.success?"Books retrieved successfully":result.error, books: result.results}, result.success?200:500)
 })
 
+app.get("/isValidBook", async (c) => {
+	const id = c.req.query().id;
+	const book = await checkAccess(c.env.DB, id, "");
+	return c.json({ valid: book.error == NotebookError.INVALID_BOOK });
+});
 
 
 export default app
