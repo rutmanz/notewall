@@ -20,12 +20,15 @@ app.get("/book/:book", async (c) => {
 	const notes = await c.env.DB.prepare("SELECT id, name, text, timestamp FROM quotes WHERE book=? ORDER BY timestamp DESC").bind(c.req.param("book")).all();
 	const cards = notes.results.map((note) => {
 		return (
-			<div class="card mb-2">
+			<div class="card mb-3">
 				<div class="card-body">
+					<a href={`/note/${note.id}`}>
+						<button class="float-end btn btn-outline-primary btn-sm align-middle">Open</button>
+					</a>
 					{book.access == NotebookAccess.ADMIN && (
 						<form action={`/book/${c.req.param("book")}/note/${note.id}/delete`} target="_self" method="post">
 							<input type="hidden" name="id" value={note.id as string} />
-							<button role="submit" class="btn btn-outline-danger btn-sm float-end">
+							<button role="submit" class="btn btn-outline-danger btn-sm float-end mx-1">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
 									<path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
 								</svg>
@@ -37,8 +40,7 @@ app.get("/book/:book", async (c) => {
 						<footer class="blockquote-footer">{note.name}</footer>
 					</blockquote>
 				</div>
-				<div class="card-footer d-flex flex-row justify-content-between">
-                    <a href={`/note/${note.id}`} class="btn btn-outline-primary btn-sm">View</a>
+				<div class="card-footer d-flex flex-row justify-content-end align-items-center">
 					<span class="text-muted" title={new Date(note.timestamp as number).toLocaleTimeString()}>
 						{new Date(note.timestamp as number).toLocaleDateString()}
 					</span>
@@ -85,7 +87,7 @@ app.get("/book/:book", async (c) => {
 			<div class="row">
 				<div class="col-10 col-lg-6 mx-auto my-5">
 					<div class="d-flex justify-content-between mb-3">
-						<h1 class="mb-2">Notes</h1>
+						<h1 class="mb-2">{book.data!.title!}</h1>
 						<div class="d-flex gap-2">
 							<button type="button" class="btn btn-outline-secondary mb-3" data-bs-toggle="modal" data-bs-target="#modal">
 								Add Note
@@ -139,8 +141,8 @@ app.get("/note/:note", async (c) => {
 		return c.text("Quote could not be found", 404);
 	}
 	return c.render(
-        <div class="container d-flex flex-column justify-content-center col-10 col-lg-6" style="min-height:100vh">
-        <div class="card mb-2">
+		<div class="container d-flex flex-column justify-content-center col-10 col-lg-6" style="min-height:100vh">
+			<div class="card mb-2">
 				<div class="card-body">
 					<blockquote class="blockquote mb-0">
 						<p>{note.text}</p>
@@ -153,14 +155,17 @@ app.get("/note/:note", async (c) => {
 					</span>
 				</div>
 			</div>
-            </div>
-            , {meta: {
-        description: note.text as string,
-        label1: "Author",
-        value1: note.name as string,
-        label2: "Date",
-        value2: new Date(note.timestamp as number).toLocaleDateString(),
-    }})
+		</div>,
+		{
+			meta: {
+				description: note.text as string,
+				label1: "Author",
+				value1: note.name as string,
+				label2: "Date",
+				value2: new Date(note.timestamp as number).toLocaleDateString(),
+			},
+		}
+	);
 });
 app.post("/book/:book/note/:note/delete", async (c) => {
 	const key = getCookie(c, "key");
