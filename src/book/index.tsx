@@ -37,7 +37,8 @@ app.get("/book/:book", async (c) => {
 						<footer class="blockquote-footer">{note.name}</footer>
 					</blockquote>
 				</div>
-				<div class="card-footer d-flex flex-row justify-content-end">
+				<div class="card-footer d-flex flex-row justify-content-between">
+                    <a href={`/note/${note.id}`} class="btn btn-outline-primary btn-sm">View</a>
 					<span class="text-muted" title={new Date(note.timestamp as number).toLocaleTimeString()}>
 						{new Date(note.timestamp as number).toLocaleDateString()}
 					</span>
