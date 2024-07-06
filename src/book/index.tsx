@@ -138,8 +138,23 @@ app.get("/note/:note", async (c) => {
 	if (!note) {
 		return c.text("Quote could not be found", 404);
 	}
-	return c.render(<></>, {meta: {
-        title: "Notewall Note",
+	return c.render(
+        <div class="container d-flex flex-column justify-content-center col-10 col-lg-6" style="min-height:100vh">
+        <div class="card mb-2">
+				<div class="card-body">
+					<blockquote class="blockquote mb-0">
+						<p>{note.text}</p>
+						<footer class="blockquote-footer">{note.name}</footer>
+					</blockquote>
+				</div>
+				<div class="card-footer d-flex flex-row justify-content-end">
+					<span class="text-muted" title={new Date(note.timestamp as number).toLocaleTimeString()}>
+						{new Date(note.timestamp as number).toLocaleDateString()}
+					</span>
+				</div>
+			</div>
+            </div>
+            , {meta: {
         description: note.text as string,
         label1: "Author",
         value1: note.name as string,

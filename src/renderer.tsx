@@ -10,6 +10,7 @@ export const renderer = jsxRenderer(({ children, title, js, meta }) => {
 				{js && <script async defer src={"/static/" + js + ".js"}></script>}
 				<title>{title}</title>
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<meta property="og:site_name" content="NoteWall" />
 				{meta && (
 					<>
 					<meta property="og:title" content={meta.title ?? title} />
