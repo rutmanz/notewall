@@ -1,13 +1,11 @@
-
 import { checkAccess, NotebookError, NotebookAccess } from "@/db";
-import {Hono} from "hono";
+import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { Bindings } from "@/global";
 import router_login from "./login";
 
-const app = new Hono<{ Bindings: Bindings }>()
-app.route("/", router_login)
-
+const app = new Hono<{ Bindings: Bindings }>();
+app.route("/", router_login);
 
 app.get("/book/:book", async (c) => {
 	const key = getCookie(c, "key");
@@ -25,10 +23,14 @@ app.get("/book/:book", async (c) => {
 			<div class="card mb-2">
 				<div class="card-body">
 					{book.access == NotebookAccess.ADMIN && (
-					<form action={`/book/${c.req.param("book")}/note/${note.id}/delete`} target="_self" method="post">
-						<input type="hidden" name="id" value={note.id as string} />
-						<input type="submit" class="btn btn-outline-danger btn-sm float-end" value="X" />
-					</form>
+						<form action={`/book/${c.req.param("book")}/note/${note.id}/delete`} target="_self" method="post">
+							<input type="hidden" name="id" value={note.id as string} />
+							<button role="submit" class="btn btn-outline-danger btn-sm float-end">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+									<path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0" />
+								</svg>
+							</button>
+						</form>
 					)}
 					<blockquote class="blockquote mb-0">
 						<p>{note.text}</p>
@@ -36,7 +38,9 @@ app.get("/book/:book", async (c) => {
 					</blockquote>
 				</div>
 				<div class="card-footer d-flex flex-row justify-content-end">
-					<span class="text-muted" title={new Date(note.timestamp as number).toLocaleTimeString()}>{new Date(note.timestamp as number).toLocaleDateString()}</span>
+					<span class="text-muted" title={new Date(note.timestamp as number).toLocaleTimeString()}>
+						{new Date(note.timestamp as number).toLocaleDateString()}
+					</span>
 				</div>
 			</div>
 		);
@@ -79,12 +83,25 @@ app.get("/book/:book", async (c) => {
 			<div class="row"></div>
 			<div class="row">
 				<div class="col-10 col-lg-6 mx-auto my-5">
-                    <div class="d-flex justify-content-between mb-3">
-					<h1 class="mb-2">Notes</h1>
-					<button type="button" class="btn btn-outline-secondary mb-3" data-bs-toggle="modal" data-bs-target="#modal">
-						Add Note
-					</button>
-                    </div>
+					<div class="d-flex justify-content-between mb-3">
+						<h1 class="mb-2">Notes</h1>
+						<div class="d-flex gap-2">
+							<button type="button" class="btn btn-outline-secondary mb-3" data-bs-toggle="modal" data-bs-target="#modal">
+								Add Note
+							</button>
+							<a href={`/book/${book.data!.id!}/login`} class="btn btn-outline-warning mb-3">
+								{book.access == NotebookAccess.ADMIN ? (
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+										<path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2M3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z" />
+									</svg>
+								) : (
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill" viewBox="0 0 16 16">
+										<path d="M3.5 11.5a3.5 3.5 0 1 1 3.163-5H14L15.5 8 14 9.5l-1-1-1 1-1-1-1 1-1-1-1 1H6.663a3.5 3.5 0 0 1-3.163 2M2.5 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+									</svg>
+								)}
+							</a>
+						</div>
+					</div>
 
 					<div id="notes">{cards}</div>
 				</div>
@@ -129,6 +146,4 @@ app.post("/book/:book/note/:note/delete", async (c) => {
 	return c.redirect(`/book/${c.req.param("book")}`);
 });
 
-
-
-export default app
+export default app;
