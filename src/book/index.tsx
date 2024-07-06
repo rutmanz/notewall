@@ -132,6 +132,20 @@ app.post("/book/:book/note/create", async (c) => {
 	return c.redirect(`/book/${c.req.param("book")}`);
 });
 
+app.get("/note/:note", async (c) => {
+	const note = await c.env.DB.prepare("SELECT * FROM quotes WHERE id = ?").bind(c.req.param("note")).first();
+	if (!note) {
+		return c.text("Quote could not be found", 404);
+	}
+	return c.render(<></>, {meta: {
+        title: "Notewall Note",
+        description: note.text as string,
+        label1: "Author",
+        value1: note.name as string,
+        label2: "Date",
+        value2: new Date(note.timestamp as number).toLocaleDateString(),
+    }})
+});
 app.post("/book/:book/note/:note/delete", async (c) => {
 	const key = getCookie(c, "key");
 	const book = await checkAccess(c.env.DB, c.req.param("book"), key);
