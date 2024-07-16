@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { renderer } from "./renderer";
+import { renderer, renderErrorPage } from "./renderer";
 import api from "./api";
 import { NotebookAccess, NotebookError, accessBook, checkAccess } from "./db";
 import { Bindings } from "./global";
@@ -37,5 +37,9 @@ app.get("/", (c) => {
 app.route("/api", api);
 app.route("/", router_book);
 app.route("/", router_create);
+
+app.get("*", (c) => {
+	return c.render(renderErrorPage("Page not found", "Error 404"));
+})
 
 export default app;

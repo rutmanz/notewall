@@ -1,22 +1,27 @@
 import { Bindings } from "@/global";
 import { checkAccess, hash, NotebookError } from "@/db";
 import { Hono } from "hono";
+import { renderErrorPage } from "./renderer";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app.post("/create", async (c) => {
 	const data = await c.req.formData();
 	if (!data.has("id")) {
-		return c.text("Please provide an identifier.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide an identifier."));
 	}
 	if (!data.has("title")) {
-		return c.text("Please provide a title.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide a title."));
 	}
 	if (!data.has("key")) {
-		return c.text("Please provide a key.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide a key."));
 	}
 	if (!data.has("admin_key")) {
-		return c.text("Please provide an admin key.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide an admin key."));
 	}
 	const id = data.get("id");
 	const title = data.get("title");
@@ -27,7 +32,8 @@ app.post("/create", async (c) => {
 		await c.env.DB.prepare("INSERT INTO books (id, title, key, admin_key) VALUES (?,?,?,?)").bind(id, title, key, admin_key).run();
 		return c.redirect(`/book/${id}`);
 	} else {
-		return c.text("Book already exists.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Book already exists."));
 	}
 });
 

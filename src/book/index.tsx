@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { Bindings } from "@/global";
 import router_login from "./login";
+import { renderErrorPage } from "@/renderer";
 
 const app = new Hono<{ Bindings: Bindings }>();
 app.route("/", router_login);
@@ -11,7 +12,8 @@ app.get("/book/:book", async (c) => {
 	const token = getCookie(c, "token");
 	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
-		return c.text("Book could not be found", 404);
+		c.status(400)
+		return c.render(renderErrorPage("Book could not be found"));
 	}
 	if (book.access == NotebookAccess.NONE) {
 		return c.redirect(`/book/${c.req.param("book")}/login`);
@@ -117,7 +119,8 @@ app.post("/book/:book/note/create", async (c) => {
 	const token = getCookie(c, "token");
 	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
-		return c.text("Book could not be found", 404);
+		c.status(400)
+		return c.render(renderErrorPage("Book could not be found"));
 	}
 	if (book.access == NotebookAccess.NONE) {
 		return c.redirect(`/book/${c.req.param("book")}/login`);
@@ -125,10 +128,12 @@ app.post("/book/:book/note/create", async (c) => {
 
 	const note = await c.req.formData();
 	if (!note.has("text")) {
-		return c.text("Please provide a note.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide a note."));
 	}
 	if (!note.has("name")) {
-		return c.text("Please provide a name.", 400);
+		c.status(400)
+		return c.render(renderErrorPage("Please provide an author."));
 	}
 	// console.log(await c.env.DB.prepare("SELECt * FROM notes").run())
 	await c.env.DB.prepare("INSERT INTO quotes (id, book, text, name, timestamp) VALUES (?,?,?,?,?)").bind(crypto.randomUUID(), c.req.param("book"), note.get("text"), note.get("name"), Date.now()).run();
@@ -138,7 +143,8 @@ app.post("/book/:book/note/create", async (c) => {
 app.get("/note/:note", async (c) => {
 	const note = await c.env.DB.prepare("SELECT * FROM quotes WHERE id = ?").bind(c.req.param("note")).first();
 	if (!note) {
-		return c.text("Quote could not be found", 404);
+		c.status(404)
+		return c.render(renderErrorPage("Note could not be found"));
 	}
 	return c.render(
 		<div class="container d-flex flex-column justify-content-center col-10 col-lg-6" style="min-height:100vh">
@@ -171,7 +177,8 @@ app.post("/book/:book/note/:note/delete", async (c) => {
 	const token = getCookie(c, "token");
 	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
-		return c.text("Book could not be found", 404);
+		c.status(400)
+		return c.render(renderErrorPage("Book could not be found"));
 	}
 	if (book.access < NotebookAccess.ADMIN) {
 		return c.redirect(`/book/${c.req.param("book")}/login`);

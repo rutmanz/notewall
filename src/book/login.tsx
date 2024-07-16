@@ -2,13 +2,15 @@ import { Hono } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { Bindings } from "@/global";
 import { checkAccess, NotebookError, NotebookAccess, createToken, getBook } from "@/db";
+import { renderErrorPage } from "@/renderer";
 
 const app = new Hono<{ Bindings: Bindings }>().basePath("/book/:book");
 
 app.get("/login", async (c) => {
 	const book = await getBook(c.env, c.req.param("book"));
 	if (book == null) {
-		return c.text("Book could not be found", 404);
+		c.status(400)
+		return c.render(renderErrorPage("Book could not be found"));
 	}
 	return c.render(
 		<div class="container d-flex flex-column justify-content-center" style="min-height:100vh">
