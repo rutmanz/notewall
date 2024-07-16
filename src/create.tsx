@@ -40,7 +40,7 @@ app.get("/create", async (c) => {
 					<form class="needs-validation" novalidate name="create" method="post">
 						<div class="mb-4">
 							<label for="idInput" class="form-label">
-								Form ID
+								Book ID
 							</label>
 							<input type="text" class="form-control slug-validate" name="id" id="idInput" aria-describedby="idHelp" placeholder="" required />
 							<div id="idHelp" class="form-text">
