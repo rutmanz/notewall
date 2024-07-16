@@ -8,6 +8,7 @@
     "deploy:prod": "$npm_execpath run build && wrangler pages deploy --branch production"
   },
   "dependencies": {
+    "@tsndr/cloudflare-worker-jwt": "^2.5.3",
     "hono": "^4.4.12"
   },
   "devDependencies": {

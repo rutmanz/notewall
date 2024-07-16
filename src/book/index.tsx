@@ -1,4 +1,4 @@
-import { checkAccess, NotebookError, NotebookAccess } from "@/db";
+import { checkAccess, NotebookError, NotebookAccess, parseToken } from "@/db";
 import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 import { Bindings } from "@/global";
@@ -8,8 +8,8 @@ const app = new Hono<{ Bindings: Bindings }>();
 app.route("/", router_login);
 
 app.get("/book/:book", async (c) => {
-	const key = getCookie(c, "key");
-	const book = await checkAccess(c.env.DB, c.req.param("book"), key);
+	const token = getCookie(c, "token");
+	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
 		return c.text("Book could not be found", 404);
 	}
@@ -114,8 +114,8 @@ app.get("/book/:book", async (c) => {
 });
 
 app.post("/book/:book/note/create", async (c) => {
-	const key = getCookie(c, "key");
-	const book = await checkAccess(c.env.DB, c.req.param("book"), key);
+	const token = getCookie(c, "token");
+	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
 		return c.text("Book could not be found", 404);
 	}
@@ -168,8 +168,8 @@ app.get("/note/:note", async (c) => {
 	);
 });
 app.post("/book/:book/note/:note/delete", async (c) => {
-	const key = getCookie(c, "key");
-	const book = await checkAccess(c.env.DB, c.req.param("book"), key);
+	const token = getCookie(c, "token");
+	const book = await parseToken(c.env, token);
 	if (book.error == NotebookError.INVALID_BOOK) {
 		return c.text("Book could not be found", 404);
 	}

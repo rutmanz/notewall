@@ -22,7 +22,7 @@ app.post("/create", async (c) => {
 	const title = data.get("title");
 	const key = await hash(data.get("key")!);
 	const admin_key = await hash(data.get("admin_key")!);
-	const book = await checkAccess(c.env.DB, id, "");
+	const book = await checkAccess(c.env, id, "");
 	if (book.error == NotebookError.INVALID_BOOK) {
 		await c.env.DB.prepare("INSERT INTO books (id, title, key, admin_key) VALUES (?,?,?,?)").bind(id, title, key, admin_key).run();
 		return c.redirect(`/book/${id}`);

@@ -17,4 +17,5 @@ declare module 'hono' {
 
 type Bindings = {
   DB: D1Database;
+  NOTEWALL_SECRET: string;
 }

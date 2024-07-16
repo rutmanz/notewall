@@ -28,7 +28,7 @@ app.post("/quotes", async (c) => {
     if (!quote.key) {
         return c.json({ message: "Please provide the book's key." }, 400)
     }
-    const book = await accessBook(c.env.DB, quote.book, quote.key)
+    const book = await accessBook(c.env, quote.book, quote.key)
     if (book.error != null) {
         return c.json({ message: book.error }, 403)
     }
@@ -45,7 +45,7 @@ app.get("/quotes", async (c) => {
     if (!query.key) {
         return c.json({ message: "Please provide a book key." }, 400)
     }
-    const quotes = await accessQuotes(c.env.DB, query.book, query.key)
+    const quotes = await accessQuotes(c.env, query.book, query.key)
     if (quotes.error != null) {
         return c.json({ message: quotes.error }, 403)
     }
@@ -89,7 +89,7 @@ app.get("/books", async (c) => {
 
 app.get("/isValidBook", async (c) => {
 	const id = c.req.query().id;
-	const book = await checkAccess(c.env.DB, id, "");
+	const book = await checkAccess(c.env, id, "");
 	return c.json({ valid: book.error == NotebookError.INVALID_BOOK });
 });
 
